@@ -1,15 +1,28 @@
-import serial
+# ImpedanceAnalyzer by Till Hänisch
+# Plattformunabhängiges Userinterface für Impedanzmessungen mit dem Elektor Impedanze-Analyzer 
+# 25.3.2026, Version 1.0
+
+# Dieses Skript verbindet sich mit dem Impedanz-Analyzer über USB, führt einen Frequenz-Sweep durch,
+# speichert die Messergebnisse in einer CSV-Datei und erstellt Gnuplot-Skripte sowie Matplotlib-Visualisierungen für Betrag und Phase der Impedanz.
+
+
 import serial.tools.list_ports
 import time
 import math
 import csv
 import matplotlib.pyplot as plt
 
+# -*- encoding: utf-8 -*-
+
 # Konstanten laut Protokoll
-BAUD_RATE = 19200 
-FREQ_FACTOR = 0.04190951586 
+BAUD_RATE = 19200 # Baudrate für die serielle Kommunikation mit dem Analyzer 
+FREQ_FACTOR = 0.04190951586 # Umrechnung von Frequenz in die 32-bit Frequenznummer (Hz * Faktor)   
+
 IDENTITY_CMD = b"-IDENTITY-" 
 EXPECTED_ID = b"IMPAN00003" 
+
+# Da wir nicht wissen, an welchem COM-Port der Analyzer hängt, durchsuchen wir alle verfügbaren Ports nach einem passenden Gerät.
+# TODO: Remember last used port in a config file for faster connection in the future.
 
 def find_com_port():
     ports = serial.tools.list_ports.comports()
@@ -31,6 +44,7 @@ def find_com_port():
                         if response == EXPECTED_ID:
                             return port.device
             except:
+                print("Error testing port " + port.device)
                 continue
     return None
 
